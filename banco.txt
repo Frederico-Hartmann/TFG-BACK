@@ -1,0 +1,188 @@
+CREATE DATABASE AGENDA;
+
+CREATE TABLE Cidades(
+	idCidade SERIAL PRIMARY KEY NOT NULL,
+	nome VARCHAR(60) NOT NULL,
+	siglaEstado VARCHAR(2) NOT NULL
+);
+
+CREATE TABLE Enderecos (
+	idEndereco SERIAL PRIMARY KEY NOT NULL,
+	tipoLougradouro VARCHAR(15) NOT NULL,
+	lougradouro VARCHAR(60) NOT NULL,
+	numero INTEGER NOT NULL,
+	complemento VARCHAR(10),
+	cep VARCHAR(9) NOT NULL,
+	idCidade INTEGER NOT NULL REFERENCES Cidades ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE Clinicas(
+	idClinica SERIAL PRIMARY KEY NOT NULL,
+	nome VARCHAR(60) NOT NULL,
+	telefone VARCHAR(15) NOT NULL,
+	idEndereco INTEGER NOT NULL REFERENCES Enderecos ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE Dentistas(
+	idDentista SERIAL PRIMARY KEY NOT NULL,
+	nome VARCHAR(60) NOT NULL,
+	cro VARCHAR(10),
+	ativo BOOLEAN NOT NULL DEFAULT TRUE,
+	idClinica INTEGER NOT NULL REFERENCES Clinicas ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE Usuarios(
+	idUsuario SERIAL PRIMARY KEY NOT NULL,
+	nome VARCHAR(100) NOT NULL,
+	cpf VARCHAR(14),
+	rg VARCHAR(11),
+	email VARCHAR(100) NOT NULL,
+	telefone VARCHAR(15),
+	senha VARCHAR(200) NOT NULL,
+	idClinica INTEGER NOT NULL REFERENCES Clinicas ON UPDATE CASCADE ON DELETE RESTRICT,
+	administrador BOOLEAN NOT NULL
+);
+
+CREATE TABLE Receitas(
+	idReceita SERIAL PRIMARY KEY NOT NULL,
+	descricao VARCHAR(30) NOT NULL,
+	idClinica INTEGER NOT NULL REFERENCES Clinicas ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE Medicamentos(
+	idMedicamento SERIAL PRIMARY KEY NOT NULL,
+	descricao VARCHAR(60) NOT NULL,
+	idClinica INTEGER NOT NULL REFERENCES Clinicas ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE ReceitaMedicamento(
+	idReceitaMedicamento SERIAL PRIMARY KEY NOT NULL,
+	quantidade INTEGER,
+	unidadeMedida VARCHAR(10),
+	idReceita INTEGER NOT NULL REFERENCES Receitas ON UPDATE CASCADE ON DELETE CASCADE,
+	idMedicamento INTEGER NOT NULL REFERENCES Medicamentos ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE Clientes(
+	idCliente SERIAL PRIMARY KEY NOT NULL,
+	nome VARCHAR(100) NOT NULL,
+	cpf VARCHAR(14),
+	rg VARCHAR(14),
+	email VARCHAR(100),
+	telefone VARCHAR(15),
+	genero CHAR,
+	dataNascimento DATE,
+	observacao TEXT,
+	receberMensagens BOOLEAN NOT NULL DEFAULT FALSE,
+	idEndereco INTEGER REFERENCES Enderecos ON UPDATE CASCADE ON DELETE RESTRICT,
+	idClinica INTEGER NOT NULL REFERENCES Clinicas ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE Documentos(
+	idDocumento SERIAL PRIMARY KEY NOT NULL,
+	nome VARCHAR(256) not NULL,
+	documento TEXT NOT NULL,
+	idCliente INTEGER NOT NULL REFERENCES Clientes ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE PerguntasAnamnese(
+	idPergunta SERIAL PRIMARY KEY NOT NULL,
+	pergunta VARCHAR(100) NOT NULL,
+	idClinica INTEGER NOT NULL REFERENCES Clinicas ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE RespostasAnamnese(
+	idResposta SERIAL PRIMARY KEY NOT NULL,
+	resposta VARCHAR(200) NOT NULL,
+	idPergunta INTEGER NOT NULL REFERENCES PerguntasAnamnese ON UPDATE CASCADE ON DELETE CASCADE,
+	idCliente INTEGER NOT NULL REFERENCES Clientes ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE Tratamentos(
+	idTratamento SERIAL PRIMARY KEY NOT NULL,
+	descricao VARCHAR(200) NOT NULL,
+	idClinica INTEGER NOT NULL REFERENCES Clinicas ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE ClienteTratamento(
+	idClienteTratamento SERIAL PRIMARY KEY NOT NULL,
+	finalizado BOOLEAN NOT NULL DEFAULT FALSE,
+	dataInicioTratamento date NOT NULL,
+	idCliente INTEGER NOT NULL REFERENCES Clientes ON UPDATE CASCADE ON DELETE RESTRICT,
+	idTratamento INTEGER NOT NULL REFERENCES Tratamentos ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE Procedimentos(
+	idProcedimento SERIAL PRIMARY KEY NOT NULL,
+	precoProcedimento NUMERIC(15,2),
+	descricao varchar(25) NOT NULL,
+	idClinica INTEGER NOT NULL REFERENCES Clinicas ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE Agendamentos(
+	idAgendamento SERIAL PRIMARY KEY NOT NULL,
+	tipo INTEGER NOT NULL,
+	inicio TIMESTAMP NOT NULL,
+	fim TIMESTAMP NOT null,
+	descricao varchar(25),
+	status INTEGER NOT NULL,
+	preco NUMERIC(15,2),
+	idDentista INTEGER NOT NULL REFERENCES Dentistas ON UPDATE CASCADE ON DELETE RESTRICT,
+	idCliente INTEGER REFERENCES Clientes ON UPDATE CASCADE ON DELETE RESTRICT,
+	idClienteTratamento INTEGER REFERENCES ClienteTratamento ON UPDATE CASCADE ON DELETE RESTRICT,
+	idProcedimento INTEGER REFERENCES Procedimentos ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+INSERT INTO Cidades(
+		nome,
+		siglaEstado
+	) VALUES(
+		'Tupanciretã',
+		'RS'
+	);
+
+INSERT INTO Enderecos (
+		tipoLougradouro,
+		lougradouro,
+		numero,
+		complemento,
+		cep,
+		idCidade
+	) VALUES(
+		'Avenida',
+		'Av. Rio Branco',
+		'881',
+		null,
+		'98170-000',
+		1
+	);
+
+INSERT INTO Clinicas(
+		nome,
+		telefone,
+		idEndereco
+	) VALUES(
+		'Clinica Teste',
+		'(00) 00000 0000',
+		1
+	);
+
+INSERT INTO Usuarios(
+		nome,
+		cpf,
+		rg,
+		email,
+		telefone,
+		senha,
+		idClinica,
+		administrador
+	)VALUES(
+		'Frederico Hartmann',
+		'02450515038',
+		'2114158021',
+		'icoghf@live.com',
+		'5555999553539',
+		'$2a$10$VwS/GZY66Fxv62wbafAkaucs6gIBB3nuCoh7QW/v8JdAgNSS/HAce',
+		1,
+		True
+	);
